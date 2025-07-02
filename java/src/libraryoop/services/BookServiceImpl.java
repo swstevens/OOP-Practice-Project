@@ -2,6 +2,8 @@
 package libraryoop.services;
 
 import libraryoop.models.Book;
+import libraryoop.models.DigitalBook;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -153,8 +155,29 @@ public class BookServiceImpl implements BookService {
                                     totalBooks - availableBooks, byType, averageCheckoutPeriod);
         */
         
-        // Placeholder implementation that should fail tests
-        return new AvailabilityReport(0, 0, 0, new HashMap<>(), 0.0);
+        // Placeholder implementation that should fail tests        
+        double totalCheckoutPeriod = 0;
+        int totalBooks = books.size();
+        int availableBooks = 0;
+        Map<String, TypeReport> byType = new HashMap<>();
+        HashMap<String, Integer> countByType = new HashMap<>();
+        HashMap<String, Integer> countAvailableByType = new HashMap<>();
+        for (Book book : books) {
+            String curType = book.getClass().getSimpleName();
+            if (book.isAvailable()) {
+                totalCheckoutPeriod += book.getCheckoutPeriod();
+                countAvailableByType.put(curType, countAvailableByType.getOrDefault(curType, 0) + (book.isAvailable() ? 1 : 0));
+                book.setAvailability(false);
+                totalCheckoutPeriod += book.getCheckoutPeriod();
+            }
+            countByType.put(curType, countByType.getOrDefault(curType, 0) + 1);
+
+        }
+        for (String type : new String[]{"DigitalBook","PhysicalBook","AudioBook"}) {
+            byType.put(type, new TypeReport(countByType.getOrDefault(type,0), countAvailableByType.getOrDefault(type,0)));
+        } 
+        availableBooks = countAvailableByType.values().stream().reduce(0, Integer::sum);
+        return new AvailabilityReport(totalBooks, availableBooks, totalBooks-availableBooks, byType, totalCheckoutPeriod/(totalBooks-availableBooks));
     }
     
     @Override

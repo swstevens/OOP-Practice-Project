@@ -182,31 +182,15 @@ public class BookServiceImpl implements BookService {
     
     @Override
     public List<Book> searchBooks(String query) {
-        /*
-        TODO: Student should implement this method
-        - Use the matchesQuery method on each book (polymorphic behavior)
-        - Return books that match the query
-        - Handle null/empty query appropriately
-        - Consider using Java 8 streams for elegant implementation
-        
-        Example implementation:
-        if (query == null || query.trim().isEmpty()) {
+        if (query == null || query.trim().isEmpty()) { 
             return new ArrayList<>();
         }
-        
-        List<Book> results = new ArrayList<>();
+        ArrayList<Book> output = new ArrayList<>();
         for (Book book : books) {
             if (book.matchesQuery(query)) {
-                results.add(book);
+                output.add(book);
             }
         }
-        return results;
-        
-        Or using streams:
-        return books.stream()
-                   .filter(book -> book.matchesQuery(query))
-                   .collect(Collectors.toList());
-        */
-        return new ArrayList<>();
+        return output;
     }
 }

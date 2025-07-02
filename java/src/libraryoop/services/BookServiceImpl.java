@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 // Main service class demonstrating dependency injection and composition
 public class BookServiceImpl implements BookService {
-    private final List<Book> books;
+    private final Set<Book> books;
     private final LendingService lendingService;
     private final NotificationService notificationService;
     
@@ -26,48 +26,29 @@ public class BookServiceImpl implements BookService {
         this.lendingService = lendingService;
         this.notificationService = notificationService;
         */
-        
+        if (lendingService == null) throw new IllegalArgumentException("LendingService must be declared");
+        if (notificationService == null) throw new IllegalArgumentException("NotificationService must be declared");
+
         // Minimal implementation to allow compilation
-        this.books = new ArrayList<>();
+        this.books = new HashSet<>();
         this.lendingService = lendingService;
         this.notificationService = notificationService;
     }
     
     @Override
-    public void addBook(Book book) {
-        /*
-        TODO: Student should implement this method
-        - Add book to books collection with null check
-        - Ensure no duplicate ISBNs
-        
-        Example implementation:
-        if (book == null) throw new IllegalArgumentException("Book cannot be null");
-        
-        // Check for duplicates
-        for (Book existingBook : books) {
-            if (existingBook.getIsbn().equals(book.getIsbn())) {
-                throw new IllegalArgumentException("Book with ISBN " + book.getIsbn() + " already exists");
-            }
-        }
-        
-        books.add(book);
-        */
-        
+    public void addBook(Book book) {        
         // Minimal implementation to allow compilation
-        if (book != null) {
-            books.add(book);
+        if (book == null) throw new IllegalArgumentException("Book must be declared");
+        
+        for (Book book_search : books) {
+            if (book_search.getIsbn() == book.getIsbn()) throw new IllegalArgumentException("Book ISBN already exists, no duplicates");
         }
+
+        books.add(book);
     }
     
     @Override
     public List<Book> getAllBooks() {
-        /*
-        TODO: Student should implement this method
-        - Return defensive copy of all books to demonstrate encapsulation
-        
-        Example implementation:
-        return new ArrayList<>(books);
-        */
         return new ArrayList<>(books);
     }
     
@@ -96,32 +77,18 @@ public class BookServiceImpl implements BookService {
         */
         
         // Minimal implementation for compilation
-        return new ArrayList<>();
+        List<T> result = new ArrayList<>();
+        for (Book book : books) {
+            if (bookClass.isInstance(book)) {
+                result.add(bookClass.cast(book));
+            }            
+        }
+        return result;
     }
     
     @Override
     public Book getBookByIsbn(String isbn) {
-        /*
-        TODO: Student should implement this method
-        - Find book with matching ISBN
-        - Return null if not found
-        - Handle null/empty ISBN parameter
-        
-        Example implementation:
-        if (isbn == null || isbn.trim().isEmpty()) {
-            return null;
-        }
-        
-        for (Book book : books) {
-            if (book.getIsbn().equals(isbn)) {
-                return book;
-            }
-        }
-        return null;
-        */
-        
-        // Minimal implementation for compilation
-        if (isbn == null) return null;
+        if (isbn == null || isbn.trim().isEmpty()) return null;
         for (Book book : books) {
             if (book.getIsbn().equals(isbn)) {
                 return book;
@@ -133,25 +100,26 @@ public class BookServiceImpl implements BookService {
     @Override
     public CheckoutResult checkoutBook(String isbn) {
         /*
-        TODO: Student should implement this method demonstrating polymorphic behavior
-        - Find book by ISBN
-        - Check if book exists, return error result if not
-        - Use lendingService.canCheckout to check availability
-        - If not available, return error result
-        - Set book availability to false
-        - Use lendingService.calculateDueDate for due date
-        - Use notificationService for notification
-        - Return success result with all information
-        
-        Success result format:
-        new CheckoutResult(true, "Book checked out successfully", "Due in X days", X, "notification message")
-        
-        Failure result format:
-        new CheckoutResult(false, "Error message")
+        public CheckoutResult(boolean success, String errorMessage) {
+            this.success = success;
+            this.message = null;
+            this.errorMessage = errorMessage;
+            this.dueDate = null;
+            this.checkoutPeriod = null;
+            this.notification = null;
+        }
         */
-        
-        // Placeholder implementation that should fail tests
-        return new CheckoutResult(false, "Not implemented");
+        try {
+            Book book = getBookByIsbn(isbn);
+            if (!book.isAvailable()) {
+                throw new IllegalArgumentException("Book is not available");
+            }
+            book.setAvailability(false);
+            return new CheckoutResult(true, "Book checked out successfully", String.format("Due in %d days",book.getCheckoutPeriod()), book.getCheckoutPeriod(), "notification message");
+
+        } catch (Exception e) {
+            return new CheckoutResult(false, "Not implemented");
+        }
     }
     
     @Override
